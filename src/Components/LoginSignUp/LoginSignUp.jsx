@@ -6,7 +6,7 @@ import "./LoginSignUp.css";
 import backgroundImage from "../Assets/login-bg.jpg";
 import avatarProfile from "../Assets/avatar.jpg";
 
-import apiDefinitions from "../../api/apiDefinitions";
+// import apiDefinitions from "../../api/apiDefinitions";
 
 const LoginSignUp = () => {
   const navigate = useNavigate();
@@ -17,11 +17,11 @@ const LoginSignUp = () => {
     navigate("/dashboard");
   };
 
-  useEffect(() => {
-    apiDefinitions.getAllProduct().then((response) => {
-      console.log(response);
-    });
-  }, []);
+  // useEffect(() => {
+  //   apiDefinitions.getAllProduct().then((response) => {
+  //     console.log(response);
+  //   });
+  // }, []);
 
   return (
     <div
@@ -47,7 +47,7 @@ const LoginSignUp = () => {
                       borderRadius: "50%",
                       width: "100px",
                       height: "100px",
-                    }} // Adjusted size
+                    }}
                   />
                   <h2>Welcome Back</h2>
                   <p className="text-muted">Please login to your account</p>

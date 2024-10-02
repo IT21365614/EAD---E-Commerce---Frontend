@@ -14,6 +14,8 @@ import ProductCategories from "./Components/ProductCategories/ProductCategories"
 import Dashboard from "./Components/Dashboard/Dashboard";
 import ProductList from "./Components/ProductList/ProductList";
 import OrderManage from "./Components/OrderManage/OrderManage";
+import VendorManagement from "./Components/VendorManagement/VendorManagement";
+import AdminOrderManagement from "./Components/AdminOrderManagement/AdminOrderManagement";
 
 function App() {
   return (
@@ -29,6 +31,11 @@ function App() {
           <Route path="/product-categories" element={<ProductCategories />} />
           <Route path="/productList" element={<ProductList />} />
           <Route path="/order-management" element={<OrderManage />} />
+          <Route path="/vendor-management" element={<VendorManagement />} />
+          <Route
+            path="/admin-order-management"
+            element={<AdminOrderManagement />}
+          />
           {/* <Route path="/dashboard" element={<Dashboard />} /> */}
         </Routes>
         <ToastContainer />

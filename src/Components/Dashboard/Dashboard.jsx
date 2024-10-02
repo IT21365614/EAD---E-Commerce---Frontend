@@ -2,9 +2,14 @@ import React, { useState } from "react";
 
 const Dashboard = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const toggleOrderDropdown = () => {
+    setIsOrderDropdownOpen(!isOrderDropdownOpen);
   };
 
   return (
@@ -51,8 +56,32 @@ const Dashboard = () => {
               </a>
             </div>
           </div>
-          <a className="nav-item nav-link" href="/order-management">
-            Order Management
+
+          <div className="nav-item dropdown">
+            <a
+              className="nav-link dropdown-toggle"
+              id="productManagementDropdown"
+              role="button"
+              onClick={toggleOrderDropdown}
+              aria-haspopup="true"
+              aria-expanded={isOrderDropdownOpen ? "true" : "false"}
+            >
+              Order Management
+            </a>
+            <div
+              className={`dropdown-menu ${isOrderDropdownOpen ? "show" : ""}`}
+              aria-labelledby="productManagementDropdown"
+            >
+              <a className="dropdown-item" href="/order-management">
+                Vendor Order List
+              </a>
+              <a className="dropdown-item" href="/admin-order-management">
+                Admin Order List
+              </a>
+            </div>
+          </div>
+          <a className="nav-item nav-link" href="/vendor-management">
+            Vendor Management
           </a>
         </div>
       </div>
