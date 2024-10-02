@@ -1,0 +1,29 @@
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5); /* Optional color overlay */
+}
+
+.card {
+  border: none;
+  background: rgba(
+    255,
+    255,
+    255,
+    0.8
+  ); /* Slightly transparent card background */
+}
+
+.shadow-lg {
+  border-radius: 15px;
+}
+
+h2 {
+  font-family: "Arial", sans-serif;
+  font-weight: 700;
+}
+
+.text-primary {
+  color: #007bff;
+}
