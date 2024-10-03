@@ -5,8 +5,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./LoginSignUp.css";
 import backgroundImage from "../Assets/login-bg.jpg";
 import avatarProfile from "../Assets/avatar.jpg";
+import { toast } from "react-toastify";
 
-// import apiDefinitions from "../../api/apiDefinitions";
+import apiDefinitions from "../../api/apiDefinitions";
 
 const LoginSignUp = () => {
   const navigate = useNavigate();
@@ -22,6 +23,21 @@ const LoginSignUp = () => {
   //     console.log(response);
   //   });
   // }, []);
+
+  useEffect(() => {
+    apiDefinitions
+      .getAllProduct()
+      .then((res) => {
+        if (res.data.code === 200) {
+          console.log("Response", res.data.data);
+        } else {
+          toast.error("Error");
+        }
+      })
+      .catch((error) => {
+        console.error("API call error:", error);
+      });
+  }, []);
 
   return (
     <div
