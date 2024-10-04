@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -11,25 +11,27 @@ import apiDefinitions from "../../api/apiDefinitions";
 
 const LoginSignUp = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   // Function to handle login button click
   const handleLoginClick = (event) => {
     event.preventDefault();
-    navigate("/dashboard");
-  };
 
-  // useEffect(() => {
-  //   apiDefinitions.getAllProduct().then((response) => {
-  //     console.log(response);
-  //   });
-  // }, []);
+    const payload = {
+      email: email,
+      password: password,
+    };
 
-  useEffect(() => {
     apiDefinitions
-      .getAllProduct()
+      .login(payload)
       .then((res) => {
-        if (res.data.code === 200) {
-          console.log("Response", res.data.data);
+        if (res.status === 200) {
+          console.log("Response", res.data);
+          toast.success("Login Successful");
+          navigate("/dashboard");
+
+          localStorage.setItem("userData", JSON.stringify(res.data));
         } else {
           toast.error("Error");
         }
@@ -37,7 +39,13 @@ const LoginSignUp = () => {
       .catch((error) => {
         console.error("API call error:", error);
       });
-  }, []);
+  };
+
+  // useEffect(() => {
+  //   apiDefinitions.getAllProduct().then((response) => {
+  //     console.log(response);
+  //   });
+  // }, []);
 
   return (
     <div
@@ -71,12 +79,20 @@ const LoginSignUp = () => {
                 <Form>
                   <Form.Group controlId="formBasicEmail">
                     <Form.Label>Email address</Form.Label>
-                    <Form.Control type="email" placeholder="Enter email" />
+                    <Form.Control
+                      type="email"
+                      placeholder="Enter email"
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                   </Form.Group>
 
                   <Form.Group controlId="formBasicPassword" className="mt-3">
                     <Form.Label>Password</Form.Label>
-                    <Form.Control type="password" placeholder="Password" />
+                    <Form.Control
+                      type="password"
+                      placeholder="Password"
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
                   </Form.Group>
 
                   <Button
