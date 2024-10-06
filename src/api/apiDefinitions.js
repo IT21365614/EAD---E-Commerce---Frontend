@@ -57,14 +57,25 @@ const apiDefinitions = {
   productDeliveredStatus: async function (productId) {
     return await api.put(`/api/ProductListing/${productId}/delivered`);
   },
-  getAllOrderList: async function () {
-    return await api.get(`/api/Order`);
+  getAllProcessingOrderList: async function () {
+    return await api.get(`/api/Order/Processing`);
   },
   adminProductDeliveryStatus: async function (productId) {
     return await api.put(`/api/Order/deliver/${productId}`);
   },
   adminCancelOrder: async function (productId) {
     return await api.put(`/api/Order/cancel/${productId}`);
+  },
+  adminCancelOrderList: async function () {
+    return await api.get(`/api/Order/cancel`);
+  },
+  cancelOrder: async function (orderId, payload) {
+    return await api.delete(`/api/Order/${orderId}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: payload,
+    });
   },
 
   //Vendor API Definitions
@@ -73,6 +84,17 @@ const apiDefinitions = {
   },
   getVendorList: async function () {
     return await api.get(`/api/User/vendors`);
+  },
+
+  //Low Stock API Definitions
+  lowStockNotification: async function (vendorId) {
+    return await api.get(`/api/LowStockNotification/${vendorId}`);
+  },
+  changeMarkAsRead: async function (notificationId, payload) {
+    return await api.put(
+      `/api/LowStockNotification/${notificationId}`,
+      payload
+    );
   },
 };
 
