@@ -16,6 +16,7 @@ import ProductList from "./Components/ProductList/ProductList";
 import OrderManage from "./Components/OrderManage/OrderManage";
 import VendorManagement from "./Components/VendorManagement/VendorManagement";
 import AdminOrderManagement from "./Components/AdminOrderManagement/AdminOrderManagement";
+import AdminCancelOrder from "./Components/AdminOrderManagement/AdminCancelOrder";
 
 function App() {
   return (
@@ -32,6 +33,10 @@ function App() {
           <Route path="/productList" element={<ProductList />} />
           <Route path="/order-management" element={<OrderManage />} />
           <Route path="/vendor-management" element={<VendorManagement />} />
+          <Route
+            path="/admin-cancel-management"
+            element={<AdminCancelOrder />}
+          />
           <Route
             path="/admin-order-management"
             element={<AdminOrderManagement />}

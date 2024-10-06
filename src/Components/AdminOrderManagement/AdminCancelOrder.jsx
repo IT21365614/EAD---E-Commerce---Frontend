@@ -3,13 +3,14 @@ import { Card, Modal, Button, Form } from "react-bootstrap";
 import apiDefinitions from "../../api/apiDefinitions";
 import { toast } from "react-toastify";
 import { api } from "../../api/api";
+import Swal from "sweetalert2";
 
 const AdminOrderManagement = () => {
   const [orders, setOrders] = useState([]);
   const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
-    apiDefinitions.getAllProcessingOrderList().then((response) => {
+    apiDefinitions.adminCancelOrderList().then((response) => {
       if (response.status === 200) {
         console.log(response.data);
         setOrders(response.data);
@@ -24,21 +25,6 @@ const AdminOrderManagement = () => {
   const [cancelNote, setCancelNote] = useState("");
   const [selectedOrderId, setSelectedOrderId] = useState(null);
 
-  // Toggle the delivered state for a specific order
-  const handleDeliveredToggle = (id) => {
-    console.log("Delivered Toggle for: ", id);
-    apiDefinitions.adminProductDeliveryStatus(id).then((response) => {
-      if (response.status === 200) {
-        console.log(response.data);
-        setRefresh(!refresh);
-        toast.success("Order Status Changed Successfully");
-      } else {
-        console.log("Failed to update delivered status");
-        toast.error("Failed to update delivered status");
-      }
-    });
-  };
-
   // Open the cancel order dialog
   const handleCancelOrderClick = (id) => {
     setSelectedOrderId(id);
@@ -48,7 +34,41 @@ const AdminOrderManagement = () => {
   // Handle the cancellation with the provided note
   const handleCancelOrderConfirm = () => {
     setShowModal(false);
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to cancel this order?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, cancel it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleCancel();
+      }
+    });
     setCancelNote("");
+  };
+
+  const handleCancel = () => {
+    const payload = {
+      cancelNote: cancelNote,
+    };
+
+    apiDefinitions.cancelOrder(selectedOrderId, payload).then((response) => {
+      try {
+        if (response.status === 200) {
+          console.log(response.data);
+          setRefresh(!refresh);
+          toast.success("Order Cancelled Successfully");
+        } else {
+          console.log("Failed to cancel order");
+          toast.error("Products have ready status");
+        }
+      } catch {
+        console.log("Failed to cancel order");
+      }
+    });
   };
 
   return (
@@ -59,16 +79,14 @@ const AdminOrderManagement = () => {
             className="text-center mb-4"
             style={{ fontWeight: "bold", fontSize: "1.5rem" }}
           >
-            Admin - Pending Orders
+            Admin - Cancel Orders
           </Card.Title>
           <table className="table table-bordered table-hover">
             <thead className="thead-dark">
               <tr>
                 <th scope="col">Order ID</th>
                 <th scope="col">Order Date</th>
-                <th scope="col">Product List</th>
                 <th scope="col">Total Price (Rs.)</th>
-                <th scope="col">Status</th>
                 <th scope="col" className="align-middle text-center">
                   Action
                 </th>
@@ -81,42 +99,8 @@ const AdminOrderManagement = () => {
                   <th scope="row">
                     {new Date(order.orderDate).toLocaleDateString()}
                   </th>
-
-                  <td>
-                    {order.orderItems
-                      .map((item) => item.productName)
-                      .join(", ")}
-                  </td>
-
                   <td>{order.totalAmount}</td>
-                  <td className="text-start">
-                    <div className="form-check form-switch">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        role="switch"
-                        id={`delivered-switch-${order.id}`}
-                        checked={
-                          order.orderStatus === "Delivered"
-                            ? true
-                            : order.deliveredStatus
-                        }
-                        onChange={() => handleDeliveredToggle(order.id)}
-                        disabled={order.orderStatus === "Delivered"}
-                      />
-                      <label
-                        className="form-check-label"
-                        htmlFor={`delivered-switch-${order.id}`}
-                      >
-                        {order.orderStatus === "Delivered"
-                          ? "Delivered"
-                          : order.deliveredStatus
-                          ? "Delivered"
-                          : "Not Delivered"}
-                      </label>
-                    </div>
-                  </td>
-                  {/* <td className="align-middle text-center">
+                  <td className="align-middle text-center">
                     <Button
                       variant="danger"
                       onClick={() => handleCancelOrderClick(order.id)}
@@ -124,7 +108,7 @@ const AdminOrderManagement = () => {
                     >
                       Cancel Order
                     </Button>
-                  </td> */}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -154,11 +138,7 @@ const AdminOrderManagement = () => {
           <Button variant="secondary" onClick={() => setShowModal(false)}>
             Close
           </Button>
-          <Button
-            variant="danger"
-            onClick={handleCancelOrderConfirm}
-            disabled={!cancelNote.trim()}
-          >
+          <Button variant="danger" onClick={handleCancelOrderConfirm}>
             Confirm Cancelation
           </Button>
         </Modal.Footer>
