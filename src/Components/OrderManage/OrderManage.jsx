@@ -1,51 +1,62 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "react-bootstrap";
+import apiDefinitions from "../../api/apiDefinitions";
+import { toast } from "react-toastify";
 
 const OrderManage = () => {
   // Define the state to manage the orders
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      productId: "P001",
-      productName: "Product 01",
-      quantity: 5,
-      isReady: true,
-      isDelivered: false,
-    },
-    {
-      id: 2,
-      productId: "P002",
-      productName: "Product 02",
-      quantity: 3,
-      isReady: false,
-      isDelivered: false,
-    },
-    {
-      id: 3,
-      productId: "P003",
-      productName: "Product 03",
-      quantity: 10,
-      isReady: true,
-      isDelivered: true,
-    },
-  ]);
+  const [orders, setOrders] = useState([]);
+  const [vendorID, setVendorID] = useState(0);
+  const [refresh, setRefresh] = useState(false);
 
-  // Toggle the ready state for a specific order
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("userData"));
+    if (user) {
+      setVendorID(user.id);
+      console.log("Vendor ID: ", user.id);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (vendorID) {
+      apiDefinitions.getProductListingByVendor(vendorID).then((response) => {
+        if (response.status === 200) {
+          console.log(response.data);
+          setOrders(response.data);
+        } else {
+          console.log("Failed to get orders");
+          toast.error("Failed to get orders");
+        }
+      });
+    }
+  }, [vendorID, refresh]);
+
   const handleReadyToggle = (id) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === id ? { ...order, isReady: !order.isReady } : order
-      )
-    );
+    console.log("Ready Toggle for: ", id);
+    apiDefinitions.productReadyStatus(id).then((response) => {
+      if (response.status === 200) {
+        console.log(response.data);
+        setRefresh(!refresh);
+        toast.success("Order Status Changed Successfully");
+      } else {
+        console.log("Failed to update ready status");
+        toast.error("Failed to update ready status");
+      }
+    });
   };
 
   // Toggle the delivered state for a specific order
   const handleDeliveredToggle = (id) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === id ? { ...order, isDelivered: !order.isDelivered } : order
-      )
-    );
+    apiDefinitions.productDeliveredStatus(id).then((response) => {
+      if (response.status === 200) {
+        console.log(response.data);
+        setRefresh(!refresh);
+        toast.success("Order Status Changed Successfully");
+      } else {
+        console.log("Failed to update delivered status");
+        toast.error("Failed to update delivered status");
+      }
+    });
   };
 
   return (
@@ -65,6 +76,7 @@ const OrderManage = () => {
                 <th scope="col">Product ID</th>
                 <th scope="col">Product Name</th>
                 <th scope="col">Quantity</th>
+                <th scope="col">Total Price</th>
                 <th scope="col" className="text-center">
                   Actions
                 </th>
@@ -77,6 +89,7 @@ const OrderManage = () => {
                   <td>{order.productId}</td>
                   <td>{order.productName}</td>
                   <td>{order.quantity}</td>
+                  <td>{order.price}</td>
                   <td className="text-start">
                     <div className="form-check form-switch me-3">
                       <input
@@ -84,14 +97,15 @@ const OrderManage = () => {
                         type="checkbox"
                         role="switch"
                         id={`ready-switch-${order.id}`}
-                        checked={order.isReady}
+                        checked={order.readyStatus}
                         onChange={() => handleReadyToggle(order.id)}
+                        disabled={order.readyStatus}
                       />
                       <label
                         className="form-check-label"
                         htmlFor={`ready-switch-${order.id}`}
                       >
-                        {order.isReady ? "Ready" : "Not Ready"}
+                        {order.readyStatus ? "Ready" : "Not Ready"}
                       </label>
                     </div>
                     <div className="form-check form-switch">
@@ -100,14 +114,15 @@ const OrderManage = () => {
                         type="checkbox"
                         role="switch"
                         id={`delivered-switch-${order.id}`}
-                        checked={order.isDelivered}
+                        checked={order.deliveredStatus}
                         onChange={() => handleDeliveredToggle(order.id)}
+                        disabled={order.deliveredStatus}
                       />
                       <label
                         className="form-check-label"
                         htmlFor={`delivered-switch-${order.id}`}
                       >
-                        {order.isDelivered ? "Delivered" : "Not Delivered"}
+                        {order.deliveredStatus ? "Delivered" : "Not Delivered"}
                       </label>
                     </div>
                   </td>

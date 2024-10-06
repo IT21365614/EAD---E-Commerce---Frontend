@@ -2,12 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Card, Button, Modal, Form } from "react-bootstrap";
 import apiDefinitions from "../../api/apiDefinitions";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const ProductManagement = () => {
-  useEffect(() => {
-    console.log("UserData: ", localStorage.getItem("userData"));
-  }, []);
-
   const [productCategories, setProductCategories] = useState([]);
   const [refresh, setRefresh] = useState(false);
 
@@ -15,27 +12,41 @@ const ProductManagement = () => {
   const [showUpdate, setShowUpdate] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [updateCategoryName, setUpdateCategory] = useState("");
+  const [updateId, setUpdateId] = useState("");
+
+  useEffect(() => {
+    apiDefinitions
+      .getCategoryList()
+      .then((res) => {
+        if (res.status === 200) {
+          setProductCategories(res.data);
+        } else {
+          toast.error("Error fetching categories.");
+        }
+      })
+      .catch((error) => {
+        console.error("API call error:", error);
+        toast.error("An error occurred while fetching categories.");
+      });
+  }, [refresh]);
 
   const handleSwitchToggle = (id, status) => {
-    console.log("Switch Toggled for ID: ", id);
-    if (status === true) {
+    if (status) {
       apiDefinitions.disableCategory(id).then((res) => {
         if (res.status === 200) {
-          console.log("Response", res.data);
           setRefresh(!refresh);
           toast.success("Category Disabled Successfully");
         } else {
-          toast.error("Error");
+          toast.error("Error disabling category.");
         }
       });
     } else {
       apiDefinitions.enableCategory(id).then((res) => {
         if (res.status === 200) {
-          console.log("Response", res.data);
           setRefresh(!refresh);
           toast.success("Category Enabled Successfully");
         } else {
-          toast.error("Error");
+          toast.error("Error enabling category.");
         }
       });
     }
@@ -47,56 +58,90 @@ const ProductManagement = () => {
   };
 
   const handleShowUpdate = () => {
-    setNewUpdateCategory("");
+    setUpdateCategory("");
     setShowUpdate(true);
   };
 
   const handleUpdate = (id, name) => {
-    setNewUpdateCategory(name);
-    console.log("Update Clicked for ID: ", id);
+    setUpdateCategory(name);
+    setUpdateId(id);
+    handleShowUpdate();
   };
 
   const handleClose = () => setShow(false);
   const handleUpdateClose = () => setShowUpdate(false);
 
-  useEffect(() => {
-    apiDefinitions
-      .getCategoryList()
-      .then((res) => {
-        console.log("Response", res);
-        if (res.status === 200) {
-          console.log("Response", res.data);
-          setProductCategories(res.data);
-        } else {
-          toast.error("Error");
-        }
-      })
-      .catch((error) => {
-        console.error("API call error:", error);
-      });
-  }, [refresh]);
-
   const handleCreateCategory = () => {
-    const payload = {
-      categoryName: newCategoryName,
-    };
+    const payload = { categoryName: newCategoryName };
 
     apiDefinitions
       .createCategory(payload)
       .then((res) => {
-        console.log("Response", res);
         if (res.status === 201) {
-          console.log("Response", res.data);
           toast.success("Category Created Successfully");
+          setRefresh(!refresh);
         } else {
-          toast.error("Error");
+          toast.error("Error creating category.");
+        }
+      })
+      .catch((error) => {
+        console.error("API call error:", error);
+        toast.error("An error occurred while creating the category.");
+      });
+
+    handleClose();
+  };
+
+  const handleUpdateCategory = () => {
+    const payload = { categoryName: updateCategoryName };
+
+    apiDefinitions
+      .updateCategory(updateId, payload)
+      .then((res) => {
+        if (res.status === 200) {
+          toast.success("Category Updated Successfully");
+          setRefresh(!refresh);
+        } else {
+          toast.error("Error updating category.");
+        }
+      })
+      .catch((error) => {
+        console.error("API call error:", error);
+        toast.error("An error occurred while updating the category.");
+      });
+
+    handleUpdateClose();
+  };
+
+  const confirmDelete = (id) => {
+    Swal.fire({
+      title: "Do You Want To Delete This Category?",
+      showDenyButton: true,
+      confirmButtonText: "Yes",
+      denyButtonText: `No`,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleDelete(id);
+      } else if (result.isDenied) {
+        Swal.fire("Deletion Was Cancelled");
+      }
+    });
+  };
+
+  const handleDelete = (id) => {
+    apiDefinitions
+      .deleteCategory(id)
+      .then((res) => {
+        if (res.status === 204) {
+          Swal.fire("Category Was Deleted Successfully");
+          setRefresh(!refresh);
+        } else {
+          Swal.fire("Error Deleting Category");
         }
       })
       .catch((error) => {
         console.error("API call error:", error);
       });
-
-    handleClose();
   };
 
   return (
@@ -138,7 +183,9 @@ const ProductManagement = () => {
                         role="switch"
                         id={`switch-${category.id}`}
                         checked={category.activeStatus}
-                        onChange={() => handleSwitchToggle(category.id)}
+                        onChange={() =>
+                          handleSwitchToggle(category.id, category.activeStatus)
+                        }
                       />
                       <label
                         className="form-check-label"
@@ -153,11 +200,20 @@ const ProductManagement = () => {
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={(e) => {
-                        handleUpdate(category.id, category.categoryName);
-                      }}
+                      onClick={() =>
+                        handleUpdate(category.id, category.categoryName)
+                      }
                     >
                       Update
+                    </Button>
+
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      style={{ marginLeft: "10px" }}
+                      onClick={() => confirmDelete(category.id)}
+                    >
+                      Delete
                     </Button>
                   </td>
                 </tr>
@@ -167,6 +223,7 @@ const ProductManagement = () => {
         </Card.Body>
       </Card>
 
+      {/* Create Category Modal */}
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Create New Product Category</Modal.Title>
@@ -194,6 +251,7 @@ const ProductManagement = () => {
         </Modal.Footer>
       </Modal>
 
+      {/* Update Category Modal */}
       <Modal show={showUpdate} onHide={handleUpdateClose}>
         <Modal.Header closeButton>
           <Modal.Title>Update Product Category</Modal.Title>
@@ -205,7 +263,7 @@ const ProductManagement = () => {
               <Form.Control
                 type="text"
                 value={updateCategoryName}
-                onChange={(e) => setNewUpdateCategory(e.target.value)}
+                onChange={(e) => setUpdateCategory(e.target.value)}
                 required
               />
             </Form.Group>
@@ -215,8 +273,8 @@ const ProductManagement = () => {
           <Button variant="secondary" onClick={handleUpdateClose}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleCreateCategory}>
-            Create
+          <Button variant="primary" onClick={handleUpdateCategory}>
+            Update
           </Button>
         </Modal.Footer>
       </Modal>

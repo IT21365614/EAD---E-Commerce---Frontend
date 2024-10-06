@@ -1,30 +1,24 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Modal, Button, Form } from "react-bootstrap";
+import apiDefinitions from "../../api/apiDefinitions";
+import { toast } from "react-toastify";
+import { api } from "../../api/api";
 
 const AdminOrderManagement = () => {
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      productId: "P001",
-      productName: "Product 01",
-      quantity: 5,
-      isDelivered: false,
-    },
-    {
-      id: 2,
-      productId: "P002",
-      productName: "Product 02",
-      quantity: 3,
-      isDelivered: false,
-    },
-    {
-      id: 3,
-      productId: "P003",
-      productName: "Product 03",
-      quantity: 10,
-      isDelivered: true,
-    },
-  ]);
+  const [orders, setOrders] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+
+  useEffect(() => {
+    apiDefinitions.getAllOrderList().then((response) => {
+      if (response.status === 200) {
+        console.log(response.data);
+        setOrders(response.data);
+      } else {
+        console.log("Failed to get orders");
+        toast.error("Failed to get orders");
+      }
+    });
+  }, [refresh]);
 
   const [showModal, setShowModal] = useState(false);
   const [cancelNote, setCancelNote] = useState("");
@@ -41,11 +35,17 @@ const AdminOrderManagement = () => {
 
   // Toggle the delivered state for a specific order
   const handleDeliveredToggle = (id) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === id ? { ...order, isDelivered: !order.isDelivered } : order
-      )
-    );
+    console.log("Delivered Toggle for: ", id);
+    apiDefinitions.adminProductDeliveryStatus(id).then((response) => {
+      if (response.status === 200) {
+        console.log(response.data);
+        setRefresh(!refresh);
+        toast.success("Order Status Changed Successfully");
+      } else {
+        console.log("Failed to update delivered status");
+        toast.error("Failed to update delivered status");
+      }
+    });
   };
 
   // Open the cancel order dialog
@@ -56,12 +56,7 @@ const AdminOrderManagement = () => {
 
   // Handle the cancellation with the provided note
   const handleCancelOrderConfirm = () => {
-    setOrders((prevOrders) =>
-      prevOrders.filter((order) => order.id !== selectedOrderId)
-    );
-    console.log(
-      `Order ID ${selectedOrderId} canceled with note: ${cancelNote}`
-    );
+    
     setShowModal(false);
     setCancelNote("");
   };
@@ -80,7 +75,9 @@ const AdminOrderManagement = () => {
             <thead className="thead-dark">
               <tr>
                 <th scope="col">Order ID</th>
+                <th scope="col">Order Date</th>
                 <th scope="col">Product List</th>
+                <th scope="col">Total Price (Rs.)</th>
                 <th scope="col">Status</th>
                 <th scope="col" className="align-middle text-center">
                   Action
@@ -91,38 +88,39 @@ const AdminOrderManagement = () => {
               {orders.map((order) => (
                 <tr key={order.id}>
                   <th scope="row">{order.id}</th>
-                  <td>{order.productName}</td>
+                  <th scope="row">
+                    {new Date(order.orderDate).toLocaleDateString()}
+                  </th>
+
+                  <td>
+                    {order.orderItems.map((item) => item.productId).join(", ")}
+                  </td>
+
+                  <td>{order.totalAmount}</td>
                   <td className="text-start">
-                    {/* <div className="form-check form-switch me-3">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        role="switch"
-                        id={`ready-switch-${order.id}`}
-                        checked={order.isReady}
-                        onChange={() => handleReadyToggle(order.id)}
-                      />
-                      <label
-                        className="form-check-label"
-                        htmlFor={`ready-switch-${order.id}`}
-                      >
-                        {order.isReady ? "Ready" : "Not Ready"}
-                      </label>
-                    </div> */}
-                    <div className="form-check form-switch ">
+                    <div className="form-check form-switch">
                       <input
                         className="form-check-input"
                         type="checkbox"
                         role="switch"
                         id={`delivered-switch-${order.id}`}
-                        checked={order.isDelivered}
+                        checked={
+                          order.orderStatus === "Delivered"
+                            ? true
+                            : order.deliveredStatus
+                        }
                         onChange={() => handleDeliveredToggle(order.id)}
+                        disabled={order.orderStatus === "Delivered"}
                       />
                       <label
                         className="form-check-label"
                         htmlFor={`delivered-switch-${order.id}`}
                       >
-                        {order.isDelivered ? "Delivered" : "Not Delivered"}
+                        {order.orderStatus === "Delivered"
+                          ? "Delivered"
+                          : order.deliveredStatus
+                          ? "Delivered"
+                          : "Not Delivered"}
                       </label>
                     </div>
                   </td>
