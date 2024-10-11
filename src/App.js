@@ -7,7 +7,6 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import LoginPage from "./Components/LoginSignUp/LoginSignUp";
-import SignUpPage from "./Components/LoginSignUp/SignUp";
 // import Home from "./Components/Home/Home";
 import ProductManagement from "./Components/ProductCategories/ProductCategories";
 import ProductCategories from "./Components/ProductCategories/ProductCategories";
@@ -26,7 +25,6 @@ function App() {
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
           {/* <Route path="/home" element={<Home />} /> */}
           <Route path="/product-management" element={<ProductManagement />} />
           <Route path="/product-categories" element={<ProductCategories />} />

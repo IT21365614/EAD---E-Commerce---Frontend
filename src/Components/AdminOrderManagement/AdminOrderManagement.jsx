@@ -69,9 +69,9 @@ const AdminOrderManagement = () => {
                 <th scope="col">Product List</th>
                 <th scope="col">Total Price (Rs.)</th>
                 <th scope="col">Status</th>
-                <th scope="col" className="align-middle text-center">
+                {/* <th scope="col" className="align-middle text-center">
                   Action
-                </th>
+                </th> */}
               </tr>
             </thead>
             <tbody>
